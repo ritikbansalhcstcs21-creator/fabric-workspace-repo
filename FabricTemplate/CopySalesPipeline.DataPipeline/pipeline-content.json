@@ -1,0 +1,135 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "name": "Copy data1",
+        "type": "Copy",
+        "dependsOn": [
+          {
+            "activity": "GetConfig",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource",
+            "queryTimeout": "02:00:00",
+            "partitionOption": "None",
+            "datasetSettings": {
+              "annotations": [],
+              "type": "SqlServerTable",
+              "schema": [],
+              "typeProperties": {
+                "schema": "dbo",
+                "table": {
+                  "value": "@activity('GetConfig').output.firstRow.TableName\n",
+                  "type": "Expression"
+                },
+                "database": {
+                  "value": "@activity('GetConfig').output.firstRow.SqlDatabaseName\n",
+                  "type": "Expression"
+                }
+              },
+              "externalReferences": {
+                "connection": "@activity('GetConfig').output.firstRow.SqlServerName\n"
+              }
+            }
+          },
+          "sink": {
+            "type": "DataWarehouseSink",
+            "allowCopyCommand": true,
+            "copyCommandSettings": {},
+            "tableOption": "autoCreate",
+            "datasetSettings": {
+              "annotations": [],
+              "connectionSettings": {
+                "name": "MRS_DW",
+                "properties": {
+                  "annotations": [],
+                  "type": "DataWarehouse",
+                  "typeProperties": {
+                    "endpoint": "3o2azv6enfeuvkxt6ht2yj3wqy-wd3wv2a5bmkeno5nzguw3gob74.datawarehouse.fabric.microsoft.com",
+                    "artifactId": "72512f69-8bfe-4911-b221-ca871b4f5727",
+                    "workspaceId": "e86af7b0-0b1d-4614-bbad-c9a96d99c1ff"
+                  },
+                  "externalReferences": {
+                    "connection": "448c337c-559d-46b8-9092-b999a2ebe517"
+                  }
+                }
+              },
+              "type": "DataWarehouseTable",
+              "schema": [],
+              "typeProperties": {
+                "table": "SalesData"
+              }
+            }
+          },
+          "enableStaging": true,
+          "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          }
+        }
+      },
+      {
+        "name": "GetConfig",
+        "description": "",
+        "type": "Lookup",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "source": {
+            "type": "DataWarehouseSource",
+            "sqlReaderQuery": {
+              "value": "SELECT TOP 1 *\nFROM EnvironmentConfig\nWHERE WorkspaceID = '@{pipeline().DataFactory}'\n",
+              "type": "Expression"
+            },
+            "queryTimeout": "02:00:00",
+            "partitionOption": "None"
+          },
+          "firstRowOnly": true,
+          "datasetSettings": {
+            "annotations": [],
+            "connectionSettings": {
+              "name": "MRS_DW",
+              "properties": {
+                "annotations": [],
+                "type": "DataWarehouse",
+                "typeProperties": {
+                  "endpoint": "3o2azv6enfeuvkxt6ht2yj3wqy-wd3wv2a5bmkeno5nzguw3gob74.datawarehouse.fabric.microsoft.com",
+                  "artifactId": "72512f69-8bfe-4911-b221-ca871b4f5727",
+                  "workspaceId": "e86af7b0-0b1d-4614-bbad-c9a96d99c1ff"
+                },
+                "externalReferences": {
+                  "connection": "448c337c-559d-46b8-9092-b999a2ebe517"
+                }
+              }
+            },
+            "type": "DataWarehouseTable",
+            "schema": [],
+            "typeProperties": {}
+          }
+        }
+      }
+    ]
+  }
+}
